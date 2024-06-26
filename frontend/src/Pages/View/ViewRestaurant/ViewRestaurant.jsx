@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import './Viewprice.css';
+import './ViewRestaurant.css';
 import Sidebar from '../../../Components/Sidebar/Sidebar';
 import { styled } from '@mui/material/styles';
 import Table from '@mui/material/Table';
@@ -12,9 +12,13 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit'; // Import EditIcon
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
 import apiURL from '../../../instances/apiConfig';
 import axios from 'axios';
 
@@ -37,33 +41,41 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
     },
 }));
 
-const Viewprice = () => {
-    const [priceData, setPriceData] = useState([]);
+const ViewRestaurant = () => {
+    const [restaurantData, setRestaurantData] = useState([]);
     const [successMessage, setSuccessMessage] = useState('');
+    const [deleteRestaurantName, setDeleteRestaurantName] = useState('');
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
-    const getPriceData = async () => {
+    const getRestaurantData = async () => {
         try {
-            const response = await axios.get(`${apiURL}/view_price`);
-            console.log('API Response:', response.data); // Log dữ liệu nhận được từ API
-            setPriceData(response.data);
+            const response = await axios.get(`${apiURL}/view_restaurant`);
+            console.log('API Response:', response.data);
+            setRestaurantData(response.data);
         } catch (err) {
             console.log('API Error:', err); // Log lỗi nếu có
         }
     };
 
-    const handleDelete = async (foodName, restaurantName) => {
-        try {
-            await axios.post(`${apiURL}/delete_food`, { name: foodName, restaurantname: restaurantName });
-            setSuccessMessage(`Food item '${foodName}' deleted successfully!`);
-            getPriceData(); // Refresh the data after deletion
-        } catch (error) {
-            console.error('There was an error deleting the food item!', error);
-        }
+    const handleDelete = (restaurantName) => {
+        setDeleteRestaurantName(restaurantName);
+        setConfirmDialogOpen(true);
     };
 
-    const handleUpdate = (foodName, restaurantName) => {
-        // Thực hiện hành động cập nhật ở đây
-        console.log(`Update ${foodName} from ${restaurantName}`);
+    const handleCloseDialog = () => {
+        setConfirmDialogOpen(false);
+    };
+
+    const handleConfirmDelete = async () => {
+        try {
+            await axios.post(`${apiURL}/delete_restaurant`, { restaurantname: deleteRestaurantName });
+            setSuccessMessage(`Restaurant '${deleteRestaurantName}' deleted successfully!`);
+            getRestaurantData(); // Refresh data after deletion
+        } catch (error) {
+            console.error('There was an error deleting the restaurant!', error);
+        } finally {
+            setConfirmDialogOpen(false);
+        }
     };
 
     const handleCloseSnackbar = () => {
@@ -71,47 +83,41 @@ const Viewprice = () => {
     };
 
     useEffect(() => {
-        getPriceData();
+        getRestaurantData();
     }, []);
 
     return (
         <div className='main-layout'>
             <Sidebar />
             <div className='viewfood-container'>
-                <p>Món ăn</p>
+                <p>Nhà hàng</p>
                 <br />
                 <TableContainer component={Paper}>
                     <Table sx={{ minWidth: 700 }} aria-label="customized table">
                         <TableHead>
                             <TableRow>
-                                <StyledTableCell>Tên món ăn</StyledTableCell>
                                 <StyledTableCell>Tên nhà hàng</StyledTableCell>
-                                <StyledTableCell>Chi tiết món ăn</StyledTableCell>
-                                <StyledTableCell>Giá</StyledTableCell>
+                                <StyledTableCell>Địa chỉ</StyledTableCell>
+                                <StyledTableCell>Thời gian mở cửa</StyledTableCell>
+                                <StyledTableCell>Thời gian đóng cửa</StyledTableCell>
                                 <StyledTableCell>Hành động</StyledTableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {priceData.map((price) => (
-                                <StyledTableRow key={price.ticket_id}>
+                            {restaurantData.map((restaurant) => (
+                                <StyledTableRow key={restaurant.restaurant_id}>
                                     <StyledTableCell component="th" scope="row">
-                                        {price.food_name}
+                                        {restaurant.restaurant_name}
                                     </StyledTableCell>
-                                    <StyledTableCell>{price.restaurant_name}</StyledTableCell>
-                                    <StyledTableCell>{price.food_detail}</StyledTableCell>
-                                    <StyledTableCell>{price.ticket_price}</StyledTableCell>
+                                    <StyledTableCell>{restaurant.restaurant_local}</StyledTableCell>
+                                    <StyledTableCell>{restaurant.restaurant_time_open}</StyledTableCell>
+                                    <StyledTableCell>{restaurant.restaurant_time_close}</StyledTableCell>
                                     <StyledTableCell>
                                         <IconButton
                                             aria-label="delete"
-                                            onClick={() => handleDelete(price.food_name, price.restaurant_name)}
+                                            onClick={() => handleDelete(restaurant.restaurant_name)}
                                         >
                                             <DeleteIcon />
-                                        </IconButton>
-                                        <IconButton
-                                            aria-label="update"
-                                            onClick={() => handleUpdate(price.food_name, price.restaurant_name)}
-                                        >
-                                            <EditIcon />
                                         </IconButton>
                                     </StyledTableCell>
                                 </StyledTableRow>
@@ -129,8 +135,27 @@ const Viewprice = () => {
                     {successMessage}
                 </Alert>
             </Snackbar>
+            <Dialog
+                open={confirmDialogOpen}
+                onClose={handleCloseDialog}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <DialogTitle id="alert-dialog-title">Xác nhận xóa</DialogTitle>
+                <DialogContent>
+                    <p>Bạn có chắc chắn muốn xóa nhà hàng '{deleteRestaurantName}'?</p>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDialog} color="primary">
+                        Hủy
+                    </Button>
+                    <Button onClick={handleConfirmDelete} color="primary" autoFocus>
+                        Xác nhận
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 };
 
-export default Viewprice;
+export default ViewRestaurant;

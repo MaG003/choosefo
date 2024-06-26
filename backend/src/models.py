@@ -1,6 +1,6 @@
 from .extentsion import db
 from sqlalchemy import Column, ForeignKey
-from sqlalchemy.dialects.mysql import INTEGER, NVARCHAR, CHAR, DATETIME
+from sqlalchemy.dialects.mysql import INTEGER, NVARCHAR, CHAR, TIME
 
 # User
 class user(db.Model):
@@ -35,13 +35,15 @@ class restaurant(db.Model):
     restaurant_id = Column(INTEGER, primary_key=True)
     restaurant_name = Column(NVARCHAR(255))
     restaurant_local = Column(NVARCHAR(255))
-    restaurant_time = Column(DATETIME)
+    restaurant_time_open = Column(TIME)
+    restaurant_time_close = Column(TIME)
 
     # Hàm khởi tại
-    def __init__(self, restaurant_name, restaurant_local, restaurant_time):
+    def __init__(self, restaurant_name, restaurant_local, restaurant_time_open, restaurant_time_close):
         self.restaurant_name = restaurant_name
         self.restaurant_local = restaurant_local
-        self.restaurant_time = restaurant_time
+        self.restaurant_time_open = restaurant_time_open
+        self.restaurant_time_close = restaurant_time_close
 
     
 # Ticket

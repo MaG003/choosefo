@@ -93,15 +93,17 @@ def add_food_view_v2():
         food_name = request.get_json()['Foodname']
         food_detail = request.get_json()['Fooddetail']
         restaurant_name = request.get_json()['Restaurantname']
-        restaurant_local = "null"
-        restaurant_time_str = "2023-12-12 12:12:12"
-        restaurant_time = datetime.strptime(restaurant_time_str, '%Y-%m-%d %H:%M:%S')
+        restaurant_local = request.get_json()['Restaurantlocal']
+        restaurant_time_open_str = request.get_json()['OperationTimeOpen']
+        restaurant_time_open = datetime.strptime(restaurant_time_open_str, '%H:%M').time()
+        restaurant_time_close_str = request.get_json()['OperationTimeClose']
+        restaurant_time_close = datetime.strptime(restaurant_time_close_str, '%H:%M').time()
         price = request.get_json()['Price']
 
         restaurant_item = session.query(restaurant).filter(restaurant.restaurant_name == restaurant_name).first()
         
         if not restaurant_item:
-            session.add(restaurant(restaurant_name,restaurant_local,restaurant_time))
+            session.add(restaurant(restaurant_name,restaurant_local,restaurant_time_open,restaurant_time_close))
             restaurant_item = session.query(restaurant).filter(restaurant.restaurant_name == restaurant_name).first()
         
         #food_detail đang đi theo detail, db đúng (food_detail của restaurant là các thuộc tính khác nhau không phụ thuộc vào food hay restaurant)
@@ -194,7 +196,8 @@ def view_restaurant_data():
         restaurants = restaurant.query.with_entities(
             restaurant.restaurant_name, 
             restaurant.restaurant_local,
-            restaurant.restaurant_time,
+            restaurant.restaurant_time_open,
+            restaurant.restaurant_time_close,
         ).all()
         return restaurant_schema.dump(restaurants), HTTPStatus.OK  
     
@@ -300,26 +303,28 @@ def delete_food_data():
     session = db.session()
 
     try:
-        # Lấy data
         food_name = request.get_json()['name']
+        restaurant_name = request.get_json()['restaurantname']
 
         food_item = session.query(food).filter(food.food_name == food_name).first()
+        restaurant_item = session.query(restaurant).filter(restaurant.restaurant_name == restaurant_name).first()
 
         if not food_item:
             return jsonify({
                 "message": f"Món ăn '{food_name}' không tồn tại!"
             }), HTTPStatus.NOT_FOUND
-
+    
         food_id = food_item.food_id
+        restaurant_id = restaurant_item.restaurant_id
         
-        session.query(ticket).filter(ticket.food_id == food_id).delete()
-        
-        session.query(food).filter(food.food_id == food_id).delete()
+        session.query(ticket).filter(ticket.food_id == food_id, ticket.restaurant_id == restaurant_id).delete()
+            
+        # session.query(food).filter(food.food_id == food_id).delete()
         
         return jsonify({
             "message": f"Đã xóa món ăn '{food_name}' thành công!"
         }), HTTPStatus.OK
-    
+        
     except Exception as e:
         session.rollback()
 
@@ -331,6 +336,7 @@ def delete_food_data():
     finally:
         session.commit()
         session.close()
+
 
 # Sửa món ăn
 def update_food_data():
@@ -361,6 +367,38 @@ def update_food_data():
         return jsonify({
             "message": "Lỗi server!", 
             "error": str(e)
+        }), HTTPStatus.BAD_REQUEST
+        
+    finally:
+        session.commit()
+        session.close()
+
+
+# Xoa nha hang
+def delete_restaurant_data():
+    session = db.session()
+
+    try:
+        restaurant_name = request.get_json()['restaurantname']
+
+        restaurant_item = session.query(restaurant).filter(restaurant.restaurant_name == restaurant_name).first()
+
+        restaurant_id = restaurant_item.restaurant_id
+        
+        session.query(ticket).filter(ticket.restaurant_id == restaurant_id).delete()
+            
+        session.query(restaurant).filter(restaurant.restaurant_id == restaurant_id).delete()
+        
+        return jsonify({
+            "message": f"Đã xóa món ăn '{restaurant_name}' thành công!"
+        }), HTTPStatus.OK
+        
+    except Exception as e:
+        session.rollback()
+
+        return jsonify({
+            "message": "Lỗi server !", 
+            "error": f"{e}"
         }), HTTPStatus.BAD_REQUEST
         
     finally:

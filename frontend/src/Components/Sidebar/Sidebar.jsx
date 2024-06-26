@@ -25,38 +25,39 @@ const Sidebar = () => {
                     <img src={home} alt="Home" />
                     <p>Home</p>
                 </div>
-                <div className='side-link' onClick={() => handleNavigation('/viewfood')}>
+                {/* <div className='side-link' onClick={() => handleNavigation('/viewfood')}>
                     <img src={game_icon} alt="ViewFood" />
                     <p>ViewFood</p>
+                </div> */}                
+                <div className='side-link' onClick={() => handleNavigation('/viewprice')}>
+                    <img src={tech} alt="ViewPrice" />
+                    <p>Món ăn</p>
+                </div>                
+                <div className='side-link' onClick={() => handleNavigation('/viewrestaurant')}>
+                    <img src={sports} alt="ViewRestaurant" />
+                    <p>Nhà hàng</p>
                 </div>
                 <div className='side-link' onClick={() => handleNavigation('/addfood')}>
                     <img src={automobiles} alt="AddFood" />
-                    <p>AddFood</p>
+                    <p>Thêm món ăn</p>
                 </div>
-                <div className='side-link' onClick={() => handleNavigation('/viewrestaurant')}>
-                    <img src={sports} alt="ViewRestaurant" />
-                    <p>ViewRestaurant</p>
-                </div>
-                <div className='side-link' onClick={() => handleNavigation('/addrestaurant')}>
+                {/* <div className='side-link' onClick={() => handleNavigation('/addrestaurant')}>
                     <img src={entertainment} alt="Addrestaurant" />
-                    <p>AddRestaurant</p>
-                </div>
-                <div className='side-link' onClick={() => handleNavigation('/viewprice')}>
-                    <img src={tech} alt="ViewPrice" />
-                    <p>ViewPrice</p>
-                </div>
-                <div className='side-link' onClick={() => handleNavigation('/addprice')}>
+                    <p>Thêm nhà hàng</p>
+                </div> */}
+
+                {/* <div className='side-link' onClick={() => handleNavigation('/addprice')}>
                     <img src={music} alt="AddPrice" />
                     <p>AddPrice</p>
-                </div>
-                <div className='side-link' onClick={() => handleNavigation('/deletefood')}>
+                </div> */}
+                {/* <div className='side-link' onClick={() => handleNavigation('/deletefood')}>
                     <img src={blogs} alt="DeleteFood" />
                     <p>DeleteFood</p>
-                </div>
-                <div className='side-link' onClick={() => handleNavigation('/updatefood')}>
+                </div> */}
+                {/* <div className='side-link' onClick={() => handleNavigation('/updatefood')}>
                     <img src={news} alt="UpdateFood" />
                     <p>UpdateFood</p>
-                </div>
+                </div> */}
                 <hr />
             </div>
         </div>

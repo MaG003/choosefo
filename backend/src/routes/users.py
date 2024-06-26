@@ -47,3 +47,7 @@ def add_food_v2():
 def update_food():
     return update_food_data()
 
+@users_route.route("/delete_restaurant", methods=["POST"])
+def delete_restaurant():
+    return delete_restaurant_data()
+

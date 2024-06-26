@@ -10,7 +10,7 @@ class FoodSchema(ma.Schema):
 
 class RestaurantSchema(ma.Schema):
     class Meta:
-        fields = ("restaurant_id", "restaurant_name", "restaurant_local", "restaurant_time")
+        fields = ("restaurant_id", "restaurant_name", "restaurant_local", "restaurant_time_open", "restaurant_time_close")
 
 class PriceSchema(ma.Schema):
     class Meta:
